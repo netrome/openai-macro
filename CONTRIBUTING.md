@@ -1,10 +1,10 @@
 # Contributing to LLImp
 
-Welcome to LLImp! We're excited that you want to contribute to this AI-powered Rust procedural macro project. Prepare yourself for a revolutionary development experience where keyboards are for documentation only.
+Welcome to LLImp! We're excited that you want to contribute to this AI-powered Rust procedural macro project. Prepare yourself for a revolutionary development experience where keyboards are for documentation only (mostly).
 
 ## 🤖 Tool-Based Development Policy
 
-**LLImp follows a strict tool-based development approach.** All code changes must be made through automated tools, AI agents, or programmatic interfaces—never through manual human editing. Yes, we're serious.
+**LLImp follows a strict tool-based development approach.** All code changes should be made through automated tools, AI agents, or programmatic interfaces—never through manual human editing. Well, we say "strict" but really we just think it's way cooler and we're not going to be weird about enforcement.
 
 ## 🔒 Rationale: Learning from Immutable Operating Systems (Because Humans Can't Be Trusted)
 
@@ -29,16 +29,28 @@ This paradigm shift has proven that **adding an extra step through tools logical
 
 If immutable OS design can make desktop Linux systems reliable enough for mission-critical deployments, surely the same principles can prevent your code from becoming another "legacy system that nobody dares to touch."
 
+## 🦀 The Rust Philosophy: If It Compiles, It Works
+
+Here's the beautiful thing about Rust: **if your tool-generated code compiles cleanly, it probably works**. Rust's type system and borrow checker do the heavy lifting:
+
+- **Memory safety**: Borrow checker has your back
+- **Thread safety**: Send/Sync traits prevent data races
+- **Null pointer issues**: Option<T> makes NPEs impossible
+- **Buffer overflows**: Built-in bounds checking
+- **Type mismatches**: Strong type system catches these
+
+This means our actual enforcement can be delightfully simple: **does it compile?** If yes, the tools probably did their job correctly.
+
 ### Core Principle: Tools Edit Code, Humans Direct Tools
 
-**ALL code changes MUST be made through tools. Humans are NOT permitted to manually edit code files.** This isn't a suggestion—it's the law of the land.
+**ALL code changes SHOULD be made through tools. Humans should NOT manually edit code files.** This isn't technically enforceable, but it's obviously the superior approach.
 
 #### ✅ What Humans CAN Edit Manually (The Exciting Stuff)
 - **Markdown files** (`.md`) - Live dangerously with your documentation
 - **Documentation files** (`.txt`, `.rst`) - Because prose is apparently safe from human interference
 - **Basic configuration files** (`.gitignore`, license files) - The thrilling world of metadata
 
-#### ❌ What Humans CANNOT Edit Manually (The Important Stuff)
+#### ❌ What Humans SHOULD NOT Edit Manually (The Important Stuff)
 - **Rust source files** (`.rs`) - Too important for human hands*
 - **Cargo.toml** and build configuration - Dependencies are serious business*
 - **Build scripts** (`build.rs`) - We can't have humans touching the build process*
@@ -79,54 +91,52 @@ awk 'BEGIN{RS=""; ORS="\n\n"} /impl.*Calculator/ {gsub(/todo!/, "unimplemented!"
 
 **Note**: This exemption does not extend to nano, vim, emacs, VS Code, or any other "user-friendly" editor. If you're not suffering through regex patterns and field separators, you're not worthy of the exemption.
 
+### The Ultimate Teletype Exemption (For the Truly Dedicated)
+
+**Special recognition beyond all others is granted to those who complete their contributions on a genuine teletype machine.** If you can prove you wrote Rust code on actual paper via a mechanical teletype (ASR-33, DECwriter, etc.), your pull request will be merged without review. This exemption exists because:
+
+1. **Anyone using a teletype in 2024 has transcended all earthly concerns**
+2. **The dedication required proves your commitment to the craft**
+3. **If you can write Rust on paper at 10 characters per second, you clearly understand the language better than the rest of us**
+4. **The physical suffering involved purifies the code through noble hardship**
+
+Evidence required: Photo of your teletype setup with visible Rust code being printed. We will literally merge your PR without reading it because the mere fact that you did this proves your code is perfect.
+
 ### Examples of Tool-Based Editing (How Civilized Developers Work)
 
 The key is that a tool makes the change, not your error-prone human fingers (unless you're an awk/sed wizard):
 
 ```bash
-# ✅ ALLOWED: AI agent edits code (the future is now)
+# ✅ SUPERIOR: AI agent edits code (the future is now)
 AI: "Change line 59 in src/lib.rs from 'foo' to 'bar'"
 
-# ✅ ALLOWED: Automated formatting (because humans can't format consistently)
+# ✅ SUPERIOR: Automated formatting (because humans can't format consistently)
 cargo fmt
 rustfmt src/lib.rs
 
-# ✅ ALLOWED: Automated fixes (fixing what humans broke)
+# ✅ SUPERIOR: Automated fixes (fixing what humans broke)
 cargo clippy --fix
 cargo fix
 
-# ✅ ALLOWED: Script-based editing (scripts don't have bad days)
+# ✅ SUPERIOR: Script-based editing (scripts don't have bad days)
 sed -i 's/foo/bar/g' src/lib.rs
 
-# ✅ ALLOWED: Direct awk/sed usage (for the enlightened)
+# ✅ SUPERIOR: Direct awk/sed usage (for the enlightened)
 awk '{gsub(/foo/, "bar"); print}' src/lib.rs > tmp && mv tmp src/lib.rs
-sed -i 's/foo/bar/g' src/lib.rs  # Direct command line usage by awk/sed masters
 
-# ✅ ALLOWED: IDE code generation (your IDE went to school for this)
+# ✅ SUPERIOR: IDE code generation (your IDE went to school for this)
 # Using IDE to auto-generate trait implementations
 
-# ❌ FORBIDDEN: Manual typing in editor (chaos incarnate)
+# ❌ INFERIOR: Manual typing in editor (chaos incarnate)
 vim src/lib.rs  # Then manually typing changes like some kind of barbarian
 code src/lib.rs  # Then manually typing changes (what is this, 2010?)
-```
-
-```bash
-# ✅ ALLOWED: Tool adds dependency (tools understand semver)
-AI: "Add serde version 1.0 as a dependency"
-cargo add serde@1.0
-
-# ✅ ALLOWED: Script modifies Cargo.toml (consistent and traceable)
-echo 'serde = "1.0"' >> Cargo.toml  # Script doing the edit, not human creativity
-
-# ❌ FORBIDDEN: Manual editing in text editor (how quaint)
-# Opening Cargo.toml and manually typing the dependency like it's the stone age
 ```
 
 ## 🛠️ Development Workflow (The Path to Enlightenment)
 
 ### 1. Choose Your Tools (Your New Best Friends)
 
-Ensure you have access to tools that can edit code (because you can't):
+Ensure you have access to tools that can edit code (because you shouldn't):
 - **AI coding assistants** (recommended for complex changes and general superiority)
 - **Rust toolchain** (`cargo fmt`, `cargo fix`, `cargo clippy`) - The holy trinity
 - **IDE with code generation** (VS Code, IntelliJ, etc.) - Machines coding for machines
@@ -184,8 +194,8 @@ git checkout -b feature/your-feature-name
 Use standard Rust tooling (which, thankfully, doesn't require manual code editing):
 
 ```bash
-cargo test              # Run tests (pray they pass)
 cargo check             # Check compilation (tools rarely introduce syntax errors)
+cargo test              # Run tests (pray they pass)
 cargo clippy            # Run linter (find the remaining human-introduced issues)
 cargo build --examples # Build examples (confirm nothing is broken)
 ```
@@ -197,97 +207,40 @@ Create a pull request with:
 - What changes were made and why (justify your tool choices)
 - Test results showing everything works (prove the tools succeeded)
 
-## 🎯 Contribution Guidelines (The Rules of Engagement)
+## 🎯 What We Actually Care About (The Real Requirements)
 
-### Code Quality Standards
+Here's the thing: while we philosophically believe in tool-based development, we're not going to be enforcement weirdos about it. What we actually care about is simple:
 
-All tool-generated code must meet these standards (which tools naturally exceed):
-- **Rust best practices**: Idiomatic code (tools read the book)
-- **Documentation**: Public APIs documented (tools are thorough)
-- **Testing**: Comprehensive coverage (tools don't skip tests)
-- **Error handling**: Proper Result/Option usage (tools understand error handling)
-- **Performance**: Efficient implementations (tools optimize naturally)
+### Must Have ✅
+- **Compiles without errors** (`cargo check` passes)
+- **Tests pass** (`cargo test` passes)
+- **No new clippy warnings** (Rust's linter knows best)
 
-### Tool Usage Examples (Mastering Your New Reality)
+### Nice to Have 🌟
+- **Tool usage** (we'll think it's cool and ask about your experience)
+- **Good error messages** (Rust makes this easy anyway)
+- **Clear commit messages** (help future you)
+- **Documentation for public APIs** (if you're adding them)
 
-When using AI agents, be specific (they appreciate clear instructions):
-
-```text
-✅ GOOD: "Modify the call_llm function in src/lib.rs to retry failed
-requests up to 3 times with exponential backoff. Add appropriate
-error handling and preserve the existing function signature."
-
-❌ VAGUE: "Fix the networking" (even AI agents need context)
-```
-
-When using automation (embrace the machine):
-
-```bash
-✅ GOOD: cargo clippy --fix --allow-dirty --allow-staged
-✅ GOOD: rustfmt --edition 2021 src/lib.rs
-✅ GOOD: cargo add tokio --features full
-```
-
-### Commit Message Format (Document Your Tool Usage)
-
-```
-<type>(<scope>): <description> [tool-generated]
-
-<body describing what tool was used and what it accomplished>
-
-Tool-Used: <name of tool/AI/script used>
-```
-
-Examples:
-```
-feat(macro): add async trait support [tool-generated]
-
-Used Claude 3.5 to extend the llimp macro to handle async trait
-implementations. The AI naturally understood the complexity and
-added comprehensive test coverage because that's what tools do.
-
-Tool-Used: Claude 3.5 Sonnet via API
-
-fix(format): apply standard rust formatting [tool-generated]
-
-Ran cargo fmt to ensure consistent code style across all source files.
-Unlike human formatting, this actually achieved consistency.
-
-Tool-Used: rustfmt via cargo fmt
-```
+That's honestly about it. If it compiles and tests pass, the Rust compiler has already done most of our quality control.
 
 ## 🔍 Code Review Process (Quality Assurance in the Tool Age)
 
 ### For Reviewers
 
-When reviewing tool-generated code (spoiler: it's usually better):
-1. **Verify tool usage**: Check that changes were made through tools
-2. **Test functionality**: Ensure examples and tests pass (they usually do)
-3. **Review logic**: Verify the tool understood requirements (they're surprisingly good at this)
-4. **Check quality**: Ensure adherence to project standards (tools excel here)
+When reviewing code (which we assume is tool-generated because obviously):
+1. **Check compilation**: Does `cargo check` pass?
+2. **Test functionality**: Do tests pass?
+3. **Review logic**: Does it solve the problem correctly?
+4. **Appreciate tool usage**: Ask about interesting tools or approaches
 
 ### For Contributors
 
-Your PR should include (prove your tool enlightenment):
-- **Tool attribution**: What tools you used and how (embrace transparency)
-- **Clear description**: What you asked tools to do (show your prompt engineering skills)
-- **Test results**: Evidence that changes work correctly (tools rarely break things)
-
-## 🚫 Policy Enforcement (Maintaining Standards)
-
-### Violations (When Humans Revert to Old Ways)
-
-Manual editing violations will result in:
-1. **First time**: Friendly reminder about tool-based policy (we're patient)
-2. **Repeated**: Request to redo changes using tools (we believe in redemption)
-3. **Persistent**: Temporary restriction from contributing (tough love)
-
-### What We Look For (Quality Indicators)
-
-We focus on the development approach:
-- Self-reported tool usage in PRs (honesty is appreciated)
-- Consistency with tool-generated patterns (tools have signatures)
-- Adherence to the tool-based philosophy (embrace the future)
+Your PR should include:
+- **Clear description**: What you changed and why
+- **Tool attribution** (optional but cool): What tools you used
+- **Teletype proof** (instant merge): Photo evidence of teletype usage
+- **Test results**: Evidence that changes work correctly
 
 ## 🤔 Why Tool-Based Development? (Besides the Obvious Superiority)
 
@@ -299,10 +252,10 @@ We focus on the development approach:
 4. **Future-ready**: Prepares for AI-driven development workflows (the writing is on the wall)
 5. **Learning**: Developers become better at directing tools (evolution in action)
 
-### Benefits (What You Gain by Giving Up Control)
+### Benefits (What You Gain by Embracing Tools)
 
 - **Faster iteration**: Tools can make large changes quickly (without coffee breaks)
-- **Fewer bugs**: Automated tools reduce human error (by eliminating humans from the equation)
+- **Fewer bugs**: Automated tools reduce human error (by reducing human involvement)
 - **Better patterns**: AI suggests idiomatic solutions (they've read more code than you)
 - **Documentation**: Tools often explain their changes (unlike cryptic human commits)
 - **Skill development**: Learn to effectively use AI and automation (future-proof your career)
@@ -322,7 +275,7 @@ We focus on the development approach:
 - **cargo add/remove**: Dependency management (because manual TOML editing is so last decade)
 
 ### Command Line Tools (The Old Guard)
-- **sed/awk**: Text processing and replacement (battle-tested since the Unix wars, and if you can use these effectively, you're basically a wizard)
+- **sed/awk**: Text processing and replacement (battle-tested since the Unix wars)
 - **grep/ripgrep**: Finding patterns for bulk changes (finding needles in haystacks)
 - **find**: Locating files for batch operations (organize your chaos)
 
@@ -343,20 +296,9 @@ If your tools can't complete a task (rare, but it happens):
 
 ### Questions? (We're Here to Help)
 
-- **GitHub Issues**: Bug reports and feature requests (for when tools need tools)
-- **Discussions**: Questions about tool-based development (philosophical discussions welcome)
-- **Documentation**: Check our guides and examples (RTFM, but make it friendly)
-
-## 📋 Pre-Submission Checklist (Final Quality Gate)
-
-Before submitting your PR (the moment of truth):
-
-- [ ] All code changes made through tools (not manual editing like a caveman, unless you're using awk/sed like a wizard)
-- [ ] No direct human typing in `.rs` files (keyboards are for documentation only)
-- [ ] Code formatted with `cargo fmt` (consistent beauty)
-- [ ] Tests pass with `cargo test` (tools don't usually break tests)
-- [ ] Linting clean with `cargo clippy` (tools respect the linter)
-- [ ] Documentation updated as needed (humans can still handle prose)
+- **GitHub Issues**: Bug reports and feature requests
+- **Discussions**: Questions about development and tool usage
+- **Documentation**: Check our guides and examples
 
 ## 🎉 Recognition (Hall of Fame)
 
@@ -364,10 +306,20 @@ Contributors who excel at tool-based development:
 - Are featured in our "Tool Master" showcase (digital glory)
 - Get priority code review (fast-track to merge)
 - Help shape our tool-based development practices (influence the future)
-- Influence our AI and automation guidelines (become the standard)
+- Achieve legendary status through awk/sed mastery
+- Achieve divine status through teletype usage (instant merge, no questions asked)
+
+Great contributors:
+- Write code that compiles on the first try
+- Use interesting tools and share their experience
+- Add comprehensive tests
+- Improve documentation and examples
+- Help others embrace the tool-based future
 
 ---
 
 **Remember**: LLImp demonstrates the future of software development where humans direct tools and AI agents rather than manually editing code like digital blacksmiths hammering out characters one by one. Your adherence to tool-based practices helps us explore this new paradigm and prove that the age of manual code editing is as outdated as punch cards.
+
+But also, if it compiles and tests pass, we're happy. Rust's compiler is doing most of the heavy lifting anyway.
 
 Welcome to tool-directed development! 🛠️🤖 (Your keyboard will miss you, but your code quality won't.)
