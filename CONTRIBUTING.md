@@ -213,8 +213,8 @@ All tool-generated code must meet these standards (which tools naturally exceed)
 When using AI agents, be specific (they appreciate clear instructions):
 
 ```text
-✅ GOOD: "Modify the call_llm function in src/lib.rs to retry failed 
-requests up to 3 times with exponential backoff. Add appropriate 
+✅ GOOD: "Modify the call_llm function in src/lib.rs to retry failed
+requests up to 3 times with exponential backoff. Add appropriate
 error handling and preserve the existing function signature."
 
 ❌ VAGUE: "Fix the networking" (even AI agents need context)
@@ -353,7 +353,6 @@ Before submitting your PR (the moment of truth):
 
 - [ ] All code changes made through tools (not manual editing like a caveman, unless you're using awk/sed like a wizard)
 - [ ] No direct human typing in `.rs` files (keyboards are for documentation only)
-- [ ] Tool usage documented in commits and PR (transparency is key)
 - [ ] Code formatted with `cargo fmt` (consistent beauty)
 - [ ] Tests pass with `cargo test` (tools don't usually break tests)
 - [ ] Linting clean with `cargo clippy` (tools respect the linter)
