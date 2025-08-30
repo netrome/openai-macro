@@ -1,6 +1,5 @@
 [workspace]
 members = [
-    "crates/openai-macro-impl",
     "crates/openai-macro",
     "examples/abuse"
 ]
