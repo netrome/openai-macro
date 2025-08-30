@@ -20,7 +20,7 @@ trait Calculator {
 struct BasicCalculator;
 
 #[openai_impl(
-    model = "gpt-4o-mini",
+    model = "gemini-2.5-flash",
     prompt = "Implement basic arithmetic operations. For division, return None if dividing by zero."
 )]
 impl Calculator for BasicCalculator {
@@ -52,7 +52,7 @@ trait TextProcessor {
 struct SimpleTextProcessor;
 
 #[openai_impl(
-    model = "gpt-4o-mini",
+    model = "gemini-2.5-flash",
     prompt = "Implement string processing functions using standard library only"
 )]
 impl TextProcessor for SimpleTextProcessor {
