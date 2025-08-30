@@ -1,4 +1,5 @@
-# OpenAI Macro
+# OpenAI Macro - addressing the problem of long compilation times in Rust
+...by making them LONGER!
 
 A Rust procedural macro that generates method implementations using OpenAI's API.
 
