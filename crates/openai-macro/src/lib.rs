@@ -14,7 +14,7 @@
 //!
 //! struct MyCalculator;
 //!
-//! #[openai_impl(model = "gpt-4o-mini", prompt = "Implement basic arithmetic operations")]
+//! #[openai_impl(model = "gemini-2.5-flash", prompt = "Implement basic arithmetic operations")]
 //! impl Calculator for MyCalculator {}
 //! ```
 //!

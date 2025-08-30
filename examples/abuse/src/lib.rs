@@ -8,7 +8,7 @@ pub trait Greeter {
 pub struct Simple;
 
 #[openai_impl(
-    model = "gpt-4o-mini",
+    model = "gemini-2.5-flash",
     prompt = "Be terse and deterministic. Use only std."
 )]
 impl Greeter for Simple {
