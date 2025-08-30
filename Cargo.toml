@@ -1,6 +1,20 @@
-[package]
-name = "openai-macro"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+members = [
+    "crates/openai-macro-impl",
+    "crates/openai-macro",
+    "examples/abuse"
+]
+resolver = "2"
 
-[dependencies]
+[workspace.dependencies]
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "2", features = ["full"] }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+base64 = "0.22"
+anyhow = "1"
+once_cell = "1"
+hex = "0.4"

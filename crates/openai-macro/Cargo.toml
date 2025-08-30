@@ -1,0 +1,16 @@
+[package]
+name = "openai-macro"
+version = "0.1.0"
+edition = "2021"
+description = "A proc macro that generates Rust code using OpenAI's API"
+license = "MIT OR Apache-2.0"
+
+[lib]
+proc-macro = true
+
+[features]
+# opt-in safety to avoid network during CI
+no-network = ["openai-macro-impl/no-network"]
+
+[dependencies]
+openai-macro-impl = { path = "../openai-macro-impl" }

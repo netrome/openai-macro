@@ -1,25 +1,33 @@
 use proc_macro::TokenStream;
-use quote::{ToTokens, quote};
+use quote::{quote, ToTokens};
 use sha2::{Digest, Sha256};
 use std::{env, fs, path::PathBuf};
-use syn::{AttributeArgs, ItemImpl, Lit, Meta, NestedMeta, parse_macro_input};
+use syn::{parse_macro_input, punctuated::Punctuated, ItemImpl, Lit, Meta, MetaNameValue, Token};
 
 #[proc_macro_attribute]
 pub fn openai_impl(args: TokenStream, input: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(args as AttributeArgs);
+    let args = parse_macro_input!(args with Punctuated::<Meta, Token![,]>::parse_terminated);
     let mut model: Option<String> = None;
     let mut prompt_hint: Option<String> = None;
 
     for arg in args {
-        if let NestedMeta::Meta(Meta::NameValue(kv)) = arg {
-            let key = kv.path.to_token_stream().to_string();
-            if let Lit::Str(val) = kv.lit {
+        match arg {
+            Meta::NameValue(MetaNameValue {
+                path,
+                value:
+                    syn::Expr::Lit(syn::ExprLit {
+                        lit: Lit::Str(val), ..
+                    }),
+                ..
+            }) => {
+                let key = path.to_token_stream().to_string();
                 match key.as_str() {
                     "model" => model = Some(val.value()),
                     "prompt" => prompt_hint = Some(val.value()),
                     _ => {}
                 }
             }
+            _ => {}
         }
     }
 
@@ -64,14 +72,14 @@ pub fn openai_impl(args: TokenStream, input: TokenStream) -> TokenStream {
     let generated_impl = if offline && cache_file.exists() {
         fs::read_to_string(&cache_file).expect("read cache")
     } else {
-        let mdl = model.unwrap_or_else(|| "gpt-4.1-mini".to_string());
-        let sys = r#"You are a Rust code generator. Return ONLY valid Rust code for method bodies. 
-Do not include backticks. Follow the provided signatures exactly. 
-If something is unspecified, make reasonable, deterministic choices. 
+        let mdl = model.unwrap_or_else(|| "gpt-4o-mini".to_string());
+        let sys = r#"You are a Rust code generator. Return ONLY valid Rust code for method bodies.
+Do not include backticks. Follow the provided signatures exactly.
+If something is unspecified, make reasonable, deterministic choices.
 Avoid external crates unless explicitly requested."#;
 
         let human = format!(
-            r#"Implement the following Rust impl methods. 
+            r#"Implement the following Rust impl methods.
 Do not change signatures. Provide only the method bodies (without 'fn' lines).
 Context:
 - Trait: {trait_path:?}
@@ -109,14 +117,20 @@ fn synthesize_impl(
     item_impl: &ItemImpl,
     bodies: &[String],
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    use anyhow::{Context, bail};
+    use anyhow::{bail, Context};
 
     // Rebuild the impl header
     let unsafety = &item_impl.unsafety;
-    let impl_token = item_impl.impl_token;
+    let impl_token = &item_impl.impl_token;
     let generics = &item_impl.generics;
-    let trait_ = &item_impl.trait_;
     let self_ty = &item_impl.self_ty;
+
+    // Handle trait implementation properly
+    let trait_impl = if let Some((_, trait_path, _)) = &item_impl.trait_ {
+        quote! { #trait_path for }
+    } else {
+        quote! {}
+    };
 
     // Replace each fn body with a parsed body from `bodies` in order.
     let mut items = Vec::new();
@@ -148,10 +162,7 @@ fn synthesize_impl(
     }
 
     let tokens = quote! {
-        #unsafety #impl_token #generics
-        #trait_ for #self_ty
-        #generics
-        {
+        #unsafety #impl_token #generics #trait_impl #self_ty #generics {
             #(#items)*
         }
     };
@@ -179,7 +190,7 @@ enum RespFormat {
 
 // Returns a JSON string array of method bodies.
 fn call_openai(model: &str, system: &str, user: &str) -> anyhow::Result<String> {
-    use anyhow::{Context, bail};
+    use anyhow::{bail, Context};
     if cfg!(feature = "no-network") || env::var("OPENAI_OFFLINE").ok().as_deref() == Some("1") {
         bail!("network disabled (OPENAI_OFFLINE=1 or feature=no-network)");
     }

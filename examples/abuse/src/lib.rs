@@ -1,3 +1,5 @@
+use openai_macro::openai_impl;
+
 pub trait Greeter {
     fn greet(&self, name: &str) -> String;
     fn exclaim(&self, text: &str) -> String;
