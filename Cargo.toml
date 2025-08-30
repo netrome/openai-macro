@@ -2,7 +2,7 @@
 members = [
     "crates/openai-macro",
     "examples/abuse"
-]
+, "examples/calculator"]
 resolver = "2"
 
 [workspace.dependencies]
