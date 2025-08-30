@@ -254,19 +254,12 @@ fn synthesize_impl(
 struct ChatReq<'a> {
     model: &'a str,
     messages: Vec<Msg<'a>>,
-    response_format: Option<RespFormat>,
 }
 
 #[derive(serde::Serialize)]
 struct Msg<'a> {
     role: &'a str,
     content: &'a str,
-}
-
-#[derive(serde::Serialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-enum RespFormat {
-    JsonObject { schema: serde_json::Value },
 }
 
 // Returns a JSON string array of method bodies.
@@ -277,41 +270,21 @@ fn call_openai(model: &str, system: &str, user: &str) -> anyhow::Result<String> 
     }
 
     let key = env::var("OPENAI_API_KEY").context("missing OPENAI_API_KEY")?;
-    let base =
-        env::var("OPENAI_BASE_URL").unwrap_or_else(|_| "https://api.openai.com/v1".to_string());
+    let base = env::var("OPENAI_BASE_URL")
+        .unwrap_or_else(|_| "https://generativelanguage.googleapis.com/v1beta/openai".to_string());
 
-    // Ask the model to return JSON array of strings (bodies).
-    let schema = serde_json::json!({
-      "name":"impl_bodies",
-      "schema":{
-        "type":"object",
-        "properties":{
-          "bodies":{"type":"array","items":{"type":"string"}}
-        },
-        "required":["bodies"],
-        "additionalProperties":false
-      },
-      "strict": true
-    });
+    // Combine system and user messages for Google API
+    let combined_prompt = format!(
+        "{}\n\nUser request: {}\n\nIMPORTANT: Return ONLY a JSON array of strings, where each string is a complete Rust function body (including braces) for the corresponding method in order. Example: [\"{{ a + b }}\", \"{{ a - b }}\"]",
+        system, user
+    );
 
     let req = ChatReq {
         model,
-        messages: vec![
-            Msg {
-                role: "system",
-                content: system,
-            },
-            Msg {
-                role: "user",
-                content: user,
-            },
-            Msg {
-                role: "user",
-                content: "Return ONLY a strict JSON object like {\"bodies\":[\"{ /* body 1 */ }\", \"{ /* body 2 */ }\"]} \
-                 where each string parses as a Rust block for the corresponding method, in order.",
-            },
-        ],
-        response_format: Some(RespFormat::JsonObject { schema }),
+        messages: vec![Msg {
+            role: "user",
+            content: &combined_prompt,
+        }],
     };
 
     let client = reqwest::blocking::Client::new();
@@ -332,11 +305,25 @@ fn call_openai(model: &str, system: &str, user: &str) -> anyhow::Result<String> 
         .as_str()
         .ok_or_else(|| anyhow::anyhow!("missing content"))?;
 
-    // content itself should be a JSON object with "bodies"
-    let j: serde_json::Value = serde_json::from_str(content).context("model didn't return JSON")?;
-    let arr = &j["bodies"];
-    if !arr.is_array() {
-        return Ok(content.to_string());
+    // Try to parse as JSON array directly (Google returns simpler format)
+    if let Ok(arr) = serde_json::from_str::<serde_json::Value>(content) {
+        if arr.is_array() {
+            return Ok(content.to_string());
+        }
     }
-    Ok(arr.to_string())
+
+    // Fallback: try to extract JSON from markdown code blocks or plain text
+    let cleaned = content
+        .lines()
+        .map(|line| line.trim())
+        .filter(|line| !line.starts_with("```"))
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    if let Ok(_) = serde_json::from_str::<serde_json::Value>(&cleaned) {
+        Ok(cleaned)
+    } else {
+        // Last resort: return as single item array
+        Ok(format!("[{}]", serde_json::to_string(content)?))
+    }
 }
