@@ -6,7 +6,7 @@ version = 4
 name = "abuse"
 version = "0.1.0"
 dependencies = [
- "openai-macro",
+ "llimp",
 ]
 
 [[package]]
@@ -88,7 +88,7 @@ checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 name = "calculator"
 version = "0.1.0"
 dependencies = [
- "openai-macro",
+ "llimp",
 ]
 
 [[package]]
@@ -531,6 +531,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "241eaef5fd12c88705a01fc1066c48c4b36e0dd4377dcdc7ec3942cea7a69956"
 
 [[package]]
+name = "llimp"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base64",
+ "hex",
+ "once_cell",
+ "proc-macro2",
+ "quote",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2",
+ "syn",
+]
+
+[[package]]
 name = "log"
 version = "0.4.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -578,27 +595,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ollama-example"
+version = "0.1.0"
+dependencies = [
+ "llimp",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
-
-[[package]]
-name = "openai-macro"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "base64",
- "hex",
- "once_cell",
- "proc-macro2",
- "quote",
- "reqwest",
- "serde",
- "serde_json",
- "sha2",
- "syn",
-]
 
 [[package]]
 name = "percent-encoding"
