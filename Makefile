@@ -102,12 +102,12 @@ setup-ollama:
 			echo "  💡 For local Ollama:"; \
 			echo "     1. Install from: https://ollama.com"; \
 			echo "     2. Run 'ollama serve' in another terminal"; \
-			echo "     3. Or use SSH tunnel: ssh -L 11434:localhost:11434 huginn.local"; \
+			echo "     3. Or use SSH tunnel: ssh -L 11434:localhost:11434 myserver.local"; \
 		else \
 			echo "  💡 For remote Ollama:"; \
 			echo "     1. Make sure Ollama is running on $$OLLAMA_HOST"; \
 			echo "     2. Check firewall allows port 11434"; \
-			echo "     3. Or use: export OLLAMA_HOST=huginn.local"; \
+			echo "     3. Or use: export OLLAMA_HOST=myserver.local"; \
 		fi; \
 		exit 1; \
 	fi
@@ -256,6 +256,11 @@ help-ollama:
 	@echo "Remote Ollama:"
 	@echo "1. Set remote host: export OLLAMA_HOST=192.168.1.100"
 	@echo "2. Test: make test-ollama"
+	@echo ""
+	@echo "SSH Tunneling (for the lazy and security-conscious):"
+	@echo "1. Forward port: ssh -L 11434:localhost:11434 user@remote-server"
+	@echo "2. Test: make test-ollama  # Uses forwarded connection"
+	@echo "   (Superior to opening ports - encrypted, secure, and feels like hacking)"
 	@echo ""
 	@echo "✅ No API key needed - runs locally or remotely!"
 

@@ -153,6 +153,50 @@ cargo run
 
 This will connect to `http://192.168.1.100:11434/v1` instead of localhost.
 
+### SSH Tunneling to Remote Ollama
+
+Let's just say... hypothetically... you're too lazy to open up port 11434 on your server running Debian. Hypothetically, you can get a secure tunnel free of charge, and it's superior anyway! Why mess with `ufw allow 11434` and worry about security when SSH does the heavy lifting? Plus, your Debian server probably already has SSH running (because who doesn't), so you're basically getting enterprise-grade tunneling for free:
+
+```bash
+# Forward local port 11434 to remote server's Ollama
+ssh -L 11434:localhost:11434 user@myserver.local
+
+# Or run in background
+ssh -f -N -L 11434:localhost:11434 user@myserver.local
+```
+
+Then use LLImp normally (it will connect to localhost:11434 which forwards to the remote server):
+
+```bash
+cargo run  # Automatically uses the forwarded connection - like magic, but better
+```
+
+**Why SSH tunneling is superior:**
+- ✅ No firewall configuration needed
+- ✅ Encrypted by default (your AI conversations stay private)
+- ✅ Works through NAT, corporate firewalls, and other network nightmares
+- ✅ No additional ports to secure or worry about
+- ✅ SSH is probably already running anyway
+- ✅ Feels like hacking, but it's totally legitimate
+
+For persistent tunneling, add to your `~/.ssh/config`:
+
+```ssh-config
+Host ollama-tunnel
+    HostName myserver.local
+    User your-username
+    LocalForward 11434 localhost:11434
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+```
+
+Then simply run:
+```bash
+ssh ollama-tunnel
+# In another terminal:
+cargo run
+```
+
 ### Override: Cloud APIs
 
 To use Google Gemini or other cloud APIs instead:
@@ -297,6 +341,7 @@ impl HttpClient for MyClient {
 ### "Connection refused"
 - Make sure Ollama is running: `ollama serve` (locally) or check remote server
 - For remote servers: verify `OLLAMA_HOST` is set correctly and server is accessible
+- For SSH access: use port forwarding `ssh -L 11434:localhost:11434 user@myserver.local`
 - Check if the model is installed: `ollama list`
 
 ### "Model not found"
