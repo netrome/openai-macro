@@ -29,17 +29,24 @@
 //!
 //! ### Environment Variables
 //!
-//! - `LLM_MODEL` - Model to use (default: "codellama:7b")
+//! - `LLM_MODEL` - Model to use (default: "gemma3:latest")
 //! - `LLM_API_KEY` - API key for cloud services (not needed for Ollama)
 //! - `LLM_BASE_URL` - Override endpoint URL
+//! - `OLLAMA_HOST` - Ollama server hostname/IP (default: "localhost")
 //!
 //! ## Ollama Support (Default)
 //!
 //! By default, llimp uses Ollama running locally:
 //! ```bash
 //! ollama serve
-//! ollama pull codellama:7b  # or your preferred coding model
-//! export LLM_MODEL=codellama:7b  # optional, this is the default
+//! ollama pull gemma3:latest  # or your preferred coding model
+//! export LLM_MODEL=gemma3:latest  # optional, this is the default
+//! cargo run
+//! ```
+//!
+//! For remote Ollama servers:
+//! ```bash
+//! export OLLAMA_HOST=192.168.1.100  # or your remote server IP/hostname
 //! cargo run
 //! ```
 //!
@@ -149,7 +156,7 @@ pub fn llimp(args: TokenStream, input: TokenStream) -> TokenStream {
     }
 
     // Build a deterministic cache key including model.
-    let model = env::var("LLM_MODEL").unwrap_or_else(|_| "codellama:7b".to_string());
+    let model = env::var("LLM_MODEL").unwrap_or_else(|_| "gemma3:latest".to_string());
     let prompt_seed = format!(
         "trait={:?}\nself_ty={}\nmethods={:#?}\nprompt_hint={:?}\nmodel={}",
         trait_path, self_ty, sigs, prompt_hint, model
@@ -174,7 +181,7 @@ pub fn llimp(args: TokenStream, input: TokenStream) -> TokenStream {
     let generated_impl = if offline && cache_file.exists() {
         fs::read_to_string(&cache_file).expect("read cache")
     } else {
-        let mdl = env::var("LLM_MODEL").unwrap_or_else(|_| "starcoder2:latest".to_string());
+        let mdl = env::var("LLM_MODEL").unwrap_or_else(|_| "gemma3:latest".to_string());
         let sys = r#"Return JSON array of Rust function bodies.
 
 Input: function signatures
@@ -348,13 +355,15 @@ fn call_llm(model: &str, system: &str, user: &str) -> anyhow::Result<String> {
             // Cloud API mode - default to Google Gemini
             "https://generativelanguage.googleapis.com/v1beta/openai".to_string()
         } else {
-            // Local Ollama mode
-            "http://localhost:11434/v1".to_string()
+            // Ollama mode - allow remote host specification
+            let ollama_host = env::var("OLLAMA_HOST").unwrap_or_else(|_| "localhost".to_string());
+            format!("http://{}:11434/v1", ollama_host)
         }
     });
 
-    // For localhost endpoints (like Ollama), API key is optional
-    let key = if base.contains("localhost") || base.contains("127.0.0.1") {
+    // For Ollama endpoints (localhost or remote), API key is optional
+    let key = if base.contains("localhost") || base.contains("127.0.0.1") || base.contains(":11434")
+    {
         env::var("LLM_API_KEY").unwrap_or_else(|_| "dummy".to_string())
     } else {
         env::var("LLM_API_KEY")

@@ -6,7 +6,7 @@
 //! Setup:
 //! 1. Install Ollama: https://ollama.com
 //! 2. Start server: ollama serve
-//! 3. Pull model: ollama pull starcoder2:latest
+//! 3. Pull model: ollama pull gemma3:latest
 //! 4. Run: cargo run -p calculator
 
 use calculator::{BasicCalculator, Calculator, SimpleTextProcessor, TextProcessor};

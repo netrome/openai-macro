@@ -14,7 +14,7 @@ help:
 	@echo "  test          - Run all core tests"
 	@echo ""
 	@echo "LLM Testing:"
-	@echo "  test-ollama   - Test with Ollama (default, local)"
+	@echo "  test-ollama   - Test with Ollama (local or remote via OLLAMA_HOST)"
 	@echo "  test-gemini   - Test with Google Gemini (cloud)"
 	@echo ""
 	@echo "Setup:"
@@ -26,9 +26,10 @@ help:
 	@echo "  demo          - Interactive demo"
 	@echo ""
 	@echo "Environment:"
-	@echo "  LLM_MODEL     - Model to use (default: starcoder2:latest)"
+	@echo "  LLM_MODEL     - Model to use (default: gemma3:latest)"
 	@echo "  LLM_API_KEY   - API key for cloud services (Gemini)"
 	@echo "  LLM_BASE_URL  - Override default endpoints"
+	@echo "  OLLAMA_HOST   - Remote Ollama server (default: localhost)"
 
 # Quick development test
 quick:
@@ -77,41 +78,99 @@ test: test-core test-offline check
 	@echo ""
 	@echo "🚀 Ready to test with LLM:"
 	@echo "  make test-ollama  # Local (recommended)"
+	@echo "  OLLAMA_HOST=192.168.1.100 make test-ollama  # Remote"
 	@echo "  make test-gemini LLM_API_KEY=your_key  # Cloud"
 
 # Ollama testing (default, local)
 setup-ollama:
 	@echo "🦙 Setting up Ollama..."
-	@if ! command -v ollama &> /dev/null; then \
-		echo "❌ Ollama not installed. Install from: https://ollama.com"; \
+	@OLLAMA_HOST=$${OLLAMA_HOST:-localhost}; \
+	echo "  Checking if Ollama is running on $$OLLAMA_HOST..."; \
+	if curl -s http://$$OLLAMA_HOST:11434/api/tags > /tmp/ollama_test.json 2>&1; then \
+		echo "  ✅ Ollama is running on $$OLLAMA_HOST"; \
+		if [ -s /tmp/ollama_test.json ]; then \
+			MODELS=$$(cat /tmp/ollama_test.json | grep -o '"name":"[^"]*"' | head -3 | cut -d'"' -f4 || echo ""); \
+			if [ -n "$$MODELS" ]; then \
+				echo "  📦 Available models: $$(echo $$MODELS | tr '\n' ' ')"; \
+			fi; \
+		fi; \
+		rm -f /tmp/ollama_test.json; \
+	else \
+		echo "  ❌ Connection test failed. Debug info:"; \
+		curl -v http://$$OLLAMA_HOST:11434/api/tags 2>&1 | head -10; \
+		if [ "$$OLLAMA_HOST" = "localhost" ]; then \
+			echo "  💡 For local Ollama:"; \
+			echo "     1. Install from: https://ollama.com"; \
+			echo "     2. Run 'ollama serve' in another terminal"; \
+			echo "     3. Or use SSH tunnel: ssh -L 11434:localhost:11434 huginn.local"; \
+		else \
+			echo "  💡 For remote Ollama:"; \
+			echo "     1. Make sure Ollama is running on $$OLLAMA_HOST"; \
+			echo "     2. Check firewall allows port 11434"; \
+			echo "     3. Or use: export OLLAMA_HOST=huginn.local"; \
+		fi; \
 		exit 1; \
 	fi
-	@echo "  Checking if Ollama is running..."
-	@if ! curl -s http://localhost:11434/api/tags &> /dev/null; then \
-		echo "  Starting Ollama server..."; \
-		echo "  Run 'ollama serve' in another terminal"; \
-		exit 1; \
+	@OLLAMA_HOST=$${OLLAMA_HOST:-localhost}; \
+	if [ "$$OLLAMA_HOST" = "localhost" ]; then \
+		echo "  Checking for models..."; \
+		if ! command -v ollama &> /dev/null; then \
+			echo "  ⚠️  Ollama CLI not found, skipping model check"; \
+		elif ! ollama list | grep -q gemma3; then \
+			echo "  Pulling gemma3 model (this may take a while)..."; \
+			ollama pull gemma3:latest; \
+		else \
+			echo "  ✅ gemma3 model available"; \
+		fi; \
 	else \
-		echo "  ✅ Ollama is running"; \
-	fi
-	@echo "  Checking for models..."
-	@if ! ollama list | grep -q starcoder2; then \
-		echo "  Pulling starcoder2 model (this may take a while)..."; \
-		ollama pull starcoder2:latest; \
-	else \
-		echo "  ✅ starcoder2 model available"; \
+		echo "  ✅ Using remote Ollama, skipping model check"; \
 	fi
 	@echo "✅ Ollama setup complete"
 
 test-ollama: setup-ollama
-	@echo "🦙 Testing with Ollama (default mode)..."
-	@echo "  Clearing cloud API variables to ensure local mode..."
-	@echo "  Building examples with local Ollama..."
-	unset LLM_API_KEY LLM_BASE_URL; LLM_MODEL=starcoder2:latest cargo build -p abuse
-	unset LLM_API_KEY LLM_BASE_URL; LLM_MODEL=starcoder2:latest cargo build -p calculator
-	@echo "  Running calculator example..."
-	unset LLM_API_KEY LLM_BASE_URL; LLM_MODEL=starcoder2:latest cargo run -p calculator
-	@echo "✅ Ollama test completed successfully!"
+	@OLLAMA_HOST=$${OLLAMA_HOST:-localhost}; \
+	echo "🦙 Testing with Ollama on $$OLLAMA_HOST..."; \
+	echo "  Clearing cloud API variables to ensure Ollama mode..."; \
+	echo "  Debug: Testing connection before build..."; \
+	if curl -s http://$$OLLAMA_HOST:11434/v1/chat/completions -X POST -H "Content-Type: application/json" -H "Authorization: Bearer dummy" -d "{\"model\": \"$${LLM_MODEL:-gemma3:latest}\", \"messages\": [{\"role\": \"user\", \"content\": \"test\"}]}" > /tmp/ollama_debug.json 2>&1; then \
+		echo "  ✅ Direct API call works"; \
+		if grep -q "error" /tmp/ollama_debug.json; then \
+			echo "  ⚠️  API responded with error:"; \
+			cat /tmp/ollama_debug.json | head -3; \
+			echo "  💡 Try with available model: LLM_MODEL=gemma3:latest make test-ollama"; \
+		else \
+			echo "  ✅ API call successful"; \
+		fi; \
+	else \
+		echo "  ❌ Direct API call failed"; \
+		cat /tmp/ollama_debug.json; \
+	fi; \
+	rm -f /tmp/ollama_debug.json; \
+	echo "  Building examples with Ollama..."; \
+	echo "  Environment: OLLAMA_HOST=$$OLLAMA_HOST LLM_MODEL=$${LLM_MODEL:-gemma3:latest}"; \
+	if unset LLM_API_KEY LLM_BASE_URL; OLLAMA_HOST=$$OLLAMA_HOST LLM_MODEL=$${LLM_MODEL:-gemma3:latest} cargo build -p abuse; then \
+		echo "  ✅ Abuse example built successfully"; \
+	else \
+		echo "  ❌ Abuse example failed to build"; \
+		echo "  💡 Common fixes:"; \
+		echo "     - Use available model: LLM_MODEL=gemma3:latest make test-ollama"; \
+		echo "     - Check connection: curl -s http://$$OLLAMA_HOST:11434/api/tags"; \
+		echo "     - Clean cache: make clean-cache"; \
+		exit 1; \
+	fi; \
+	if unset LLM_API_KEY LLM_BASE_URL; OLLAMA_HOST=$$OLLAMA_HOST LLM_MODEL=$${LLM_MODEL:-gemma3:latest} cargo build -p calculator; then \
+		echo "  ✅ Calculator example built successfully"; \
+	else \
+		echo "  ❌ Calculator example failed to build"; \
+		exit 1; \
+	fi; \
+	echo "  Running calculator example..."; \
+	if unset LLM_API_KEY LLM_BASE_URL; OLLAMA_HOST=$$OLLAMA_HOST LLM_MODEL=$${LLM_MODEL:-gemma3:latest} cargo run -p calculator; then \
+		echo "✅ Ollama test completed successfully!"; \
+	else \
+		echo "❌ Calculator example failed to run"; \
+		exit 1; \
+	fi
 
 # Google Gemini testing (cloud)
 test-gemini:
@@ -164,7 +223,7 @@ demo:
 	@echo "You can override with cloud APIs when needed."
 	@echo ""
 	@echo "Choose a demo:"
-	@echo "1) Ollama demo (local, free, private)"
+	@echo "1) Ollama demo (local/remote, free, private)"
 	@echo "2) Gemini demo (cloud, requires LLM_API_KEY env var)"
 	@echo "3) Core library demo (no LLM needed)"
 	@echo ""
@@ -188,13 +247,17 @@ demo:
 help-ollama:
 	@echo "🦙 Ollama Setup (Recommended)"
 	@echo "============================"
+	@echo "Local Ollama:"
 	@echo "1. Install Ollama: https://ollama.com"
 	@echo "2. Start server: ollama serve"
-	@echo "3. Pull model: ollama pull starcoder2:latest"
-	@echo "4. Set model: export LLM_MODEL=starcoder2:latest"
-	@echo "5. Test: make test-ollama"
+	@echo "3. Pull model: ollama pull gemma3:latest"
+	@echo "4. Test: make test-ollama"
 	@echo ""
-	@echo "✅ No API key needed - runs locally!"
+	@echo "Remote Ollama:"
+	@echo "1. Set remote host: export OLLAMA_HOST=192.168.1.100"
+	@echo "2. Test: make test-ollama"
+	@echo ""
+	@echo "✅ No API key needed - runs locally or remotely!"
 
 help-gemini:
 	@echo "🔍 Google Gemini Setup"
@@ -209,7 +272,7 @@ help-gemini:
 dev:
 	@echo "🔧 Development workflow..."
 	make quick
-	unset LLM_API_KEY LLM_BASE_URL; LLM_MODEL=starcoder2:latest make test-ollama
+	unset LLM_API_KEY LLM_BASE_URL; LLM_MODEL=gemma3:latest make test-ollama
 
 # CI/CD friendly test
 ci:

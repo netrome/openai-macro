@@ -3,12 +3,16 @@
 //! This example shows how to use the llimp macro to generate method implementations.
 //! By default, it uses Ollama running locally - no API key needed!
 //!
-//! Setup:
+//! Quick start (Local Ollama):
 //! 1. Install Ollama: https://ollama.com
 //! 2. Start server: ollama serve
-//! 3. Pull model: ollama pull codellama:7b
-//! 4. Set model: export LLM_MODEL=codellama:7b (optional, this is the default)
+//! 3. Pull model: ollama pull gemma3:latest
+//! 4. Set model: export LLM_MODEL=gemma3:latest (optional, this is the default)
 //! 5. Run: cargo run -p calculator
+//!
+//! Remote Ollama server:
+//! 1. Set remote host: export OLLAMA_HOST=192.168.1.100
+//! 2. Run: cargo run -p calculator
 //!
 //! For cloud APIs, set LLM_MODEL, LLM_API_KEY and LLM_BASE_URL environment variables.
 

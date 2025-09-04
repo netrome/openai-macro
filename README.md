@@ -28,7 +28,7 @@ Plus, implementing code this way dramatically simplifies problem solving - inste
 ollama serve
 
 # 3. Pull a coding model
-ollama pull starcoder2:latest
+ollama pull gemma3:latest
 ```
 
 That's it! No API keys, no cloud accounts, no costs (other than electricity).
@@ -74,7 +74,7 @@ fn main() {
 ### 4. Run Your Code
 
 ```bash
-export LLM_MODEL=starcoder2:latest  # optional, this is the default
+export LLM_MODEL=gemma3:latest  # optional, this is the default
 cargo run
 ```
 
@@ -140,6 +140,19 @@ cargo run     # That's it!
 
 No configuration needed - LLImp automatically finds your local Ollama instance.
 
+### Remote Ollama Server
+
+To use a remote Ollama server instead of localhost:
+
+```bash
+export OLLAMA_HOST=192.168.1.100  # Your remote server IP or hostname
+# or
+export OLLAMA_HOST=ollama.example.com  # Remote hostname
+cargo run
+```
+
+This will connect to `http://192.168.1.100:11434/v1` instead of localhost.
+
 ### Override: Cloud APIs
 
 To use Google Gemini or other cloud APIs instead:
@@ -155,9 +168,10 @@ Only when **both** `LLM_API_KEY` and `LLM_BASE_URL` are set, cloud APIs are used
 
 ### Environment Variables
 
-- `LLM_MODEL`: Model to use (default: "starcoder2:latest")
+- `LLM_MODEL`: Model to use (default: "gemma3:latest")
 - `LLM_API_KEY`: API key for cloud services (not needed for Ollama)
 - `LLM_BASE_URL`: Override endpoint URL
+- `OLLAMA_HOST`: Ollama server hostname/IP (default: "localhost")
 - `LLM_OFFLINE=1`: Use only cached implementations, no network requests
 
 ### Macro Parameters
@@ -227,7 +241,7 @@ cargo build
 make quick
 
 # Full test with Ollama
-export LLM_MODEL=codellama:7b
+export LLM_MODEL=gemma3:latest
 make test-ollama
 
 # Test with cloud API
@@ -281,11 +295,12 @@ impl HttpClient for MyClient {
 ## Troubleshooting
 
 ### "Connection refused"
-- Make sure Ollama is running: `ollama serve`
+- Make sure Ollama is running: `ollama serve` (locally) or check remote server
+- For remote servers: verify `OLLAMA_HOST` is set correctly and server is accessible
 - Check if the model is installed: `ollama list`
 
 ### "Model not found"
-- Pull the model: `ollama pull starcoder2:latest`
+- Pull the model: `ollama pull gemma3:latest`
 
 ### "Compilation slow"
 - First run generates code (slow)
@@ -294,15 +309,20 @@ impl HttpClient for MyClient {
 
 ### "Generated code is wrong"
 - Improve your prompt with more specific instructions
-- Try a different model: `export LLM_MODEL=llama3.2:latest`
+- Try a different model: `export LLM_MODEL=gemma3:latest`
 - Add type hints and documentation to your traits
 - Clean cache and retry: `make clean-cache`
 
 ### "Examples won't run"
 ```bash
-# For calculator example
+# For calculator example (local Ollama)
 export LLM_BASE_URL=http://localhost:11434/v1
 unset LLM_API_KEY
+export LLM_MODEL=gemma3:latest
+cargo run -p calculator
+
+# For calculator example (remote Ollama)
+export OLLAMA_HOST=192.168.1.100  # Your remote server
 export LLM_MODEL=gemma3:latest
 cargo run -p calculator
 

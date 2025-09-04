@@ -26,8 +26,8 @@ echo "✅ Ollama is running"
 MODELS=$(curl -s http://localhost:11434/api/tags | jq -r '.models[].name' 2>/dev/null || echo "")
 
 if [ -z "$MODELS" ]; then
-    echo "⚠️  No models found. Pulling codellama..."
-    ollama pull codellama:7b
+    echo "⚠️  No models found. Pulling gemma3..."
+    ollama pull gemma3:latest
     echo "✅ Model downloaded"
 else
     echo "✅ Available models:"
@@ -38,10 +38,20 @@ fi
 export LLM_BASE_URL=http://localhost:11434/v1
 unset LLM_API_KEY  # Not needed for localhost
 
+# You can also use remote Ollama servers:
+# export OLLAMA_HOST=192.168.1.100  # Remote server IP
+# export OLLAMA_HOST=ollama.example.com  # Remote hostname
+# unset LLM_BASE_URL  # Let OLLAMA_HOST take effect
+
 echo ""
 echo "🔧 Configuration:"
 echo "   LLM_BASE_URL=$LLM_BASE_URL"
-echo "   LLM_API_KEY: <not set> (not needed for localhost)"
+if [ -n "$OLLAMA_HOST" ]; then
+    echo "   OLLAMA_HOST=$OLLAMA_HOST (will override default localhost)"
+else
+    echo "   OLLAMA_HOST: <not set> (using localhost)"
+fi
+echo "   LLM_API_KEY: <not set> (not needed for Ollama)"
 
 echo ""
 echo "🚀 Building calculator example with Ollama..."
@@ -68,7 +78,7 @@ trait SimpleTest {
 struct Test;
 
 #[llimp(
-    model = "codellama",
+    model = "gemma3",
     prompt = "Return a simple hello message"
 )]
 impl SimpleTest for Test {
@@ -100,15 +110,21 @@ echo ""
 echo "✨ LLImp + Ollama integration is ready!"
 echo ""
 echo "💡 Next steps:"
+echo "   Local Ollama:"
 echo "   1. Run: export LLM_BASE_URL=http://localhost:11434/v1"
-echo "   2. Use any model available in Ollama: codellama, deepseek-coder, llama3.1, etc."
-echo "   3. Build your project: cargo build"
+echo "   2. Build your project: cargo build"
+echo ""
+echo "   Remote Ollama:"
+echo "   1. Run: export OLLAMA_HOST=192.168.1.100  # Your remote server"
+echo "   2. Build your project: cargo build"
+echo ""
+echo "   3. Use any model available in Ollama: gemma3, deepseek-coder, llama3.1, etc."
 echo "   4. The first build will be slow as implementations are generated"
 echo "   5. Subsequent builds use cached implementations and are fast"
 echo ""
 echo "🎯 To test with the calculator example:"
-echo "   export LLM_BASE_URL=http://localhost:11434/v1"
-echo "   cargo run -p calculator"
+echo "   Local:  export LLM_BASE_URL=http://localhost:11434/v1 && cargo run -p calculator"
+echo "   Remote: export OLLAMA_HOST=your-server-ip && cargo run -p calculator"
 
 # Cleanup
 rm -f /tmp/ollama_test.rs
