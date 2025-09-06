@@ -1,15 +1,24 @@
 [workspace]
 members = [
-    "crates/openai-macro",
-    "examples/abuse"
-, "examples/calculator"]
+    "crates/llimp",
+    "examples/abuse",
+    "examples/calculator",
+    "examples/ollama",
+]
 resolver = "2"
+
+# Default members for testing - excludes examples that require LLM implementations
+default-members = ["crates/llimp"]
 
 [workspace.dependencies]
 proc-macro2 = "1"
 quote = "1"
 syn = { version = "2", features = ["full"] }
-reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "json"] }
+reqwest = { version = "0.12", default-features = false, features = [
+    "blocking",
+    "rustls-tls",
+    "json",
+] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"

@@ -1,8 +1,8 @@
 [package]
-name = "openai-macro"
+name = "llimp"
 version = "0.1.0"
 edition = "2021"
-description = "A proc macro that generates Rust code using OpenAI's API"
+description = "A proc macro that generates Rust code using LLMs (Large Language Models)"
 license = "MIT OR Apache-2.0"
 
 [lib]
